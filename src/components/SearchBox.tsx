@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { styled } from "@mui/material/styles";
 import InputBase from "@mui/material/InputBase";
 import SearchIcon from "@mui/icons-material/Search";
+import { useNavigate } from "react-router-dom";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -17,7 +18,7 @@ const SearchIconWrapper = styled("div")(({ theme }) => ({
 }));
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
+  color: "white",
   "& .MuiInputBase-input": {
     width: 0,
     transition: "0.3s",
@@ -32,6 +33,7 @@ export default function SearchBox() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const searchMovies = async (text: string) => {
     if (!text) {
@@ -39,17 +41,21 @@ export default function SearchBox() {
       return;
     }
 
-    const res = await fetch(
-      `https://api.themoviedb.org/3/search/movie?api_key=${import.meta.env.VITE_APP_TMDB_V3_API_KEY}&query=${text}`
-    );
+    try {
+      const res = await fetch(
+        `https://api.themoviedb.org/3/search/movie?api_key=${import.meta.env.VITE_APP_TMDB_V3_API_KEY}&query=${text}`
+      );
 
-    const data = await res.json();
-    setResults(data.results || []);
+      const data = await res.json();
+      setResults(data.results || []);
+    } catch (err) {
+      console.error("Search error:", err);
+    }
   };
 
   return (
     <div style={{ position: "relative" }}>
-      {/* SEARCH BAR */}
+      {/* 🔍 SEARCH BAR */}
       <Search
         style={
           isFocused
@@ -60,7 +66,6 @@ export default function SearchBox() {
         <SearchIconWrapper
           onClick={() => {
             searchInputRef.current?.focus();
-            searchMovies(query);
           }}
         >
           <SearchIcon />
@@ -75,18 +80,21 @@ export default function SearchBox() {
             searchMovies(e.target.value);
           }}
           onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onBlur={() => {
+            // delay so click works
+            setTimeout(() => setIsFocused(false), 200);
+          }}
         />
       </Search>
 
-      {/* DROPDOWN RESULTS */}
-      {results.length > 0 && (
+      {/* 🎬 RESULTS DROPDOWN */}
+      {results.length > 0 && isFocused && (
         <div
           style={{
             position: "absolute",
-            top: "45px",
+            top: "40px",
             right: 0,
-            width: "350px",
+            width: "400px",
             maxHeight: "400px",
             overflowY: "auto",
             backgroundColor: "black",
@@ -105,15 +113,22 @@ export default function SearchBox() {
                 cursor: "pointer",
                 alignItems: "center",
               }}
+              onClick={() => {
+                navigate(`/watch/${movie.id}`);
+                setResults([]);
+                setQuery("");
+              }}
             >
-              {movie.poster_path && (
-                <img
-                  src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
-                  alt={movie.title}
-                  style={{ width: "50px", borderRadius: "4px" }}
-                />
-              )}
-              <p style={{ color: "white", fontSize: "14px" }}>
+              <img
+                src={
+                  movie.poster_path
+                    ? `https://image.tmdb.org/t/p/w200${movie.poster_path}`
+                    : "https://via.placeholder.com/50x75?text=No+Image"
+                }
+                alt={movie.title}
+                style={{ width: "50px" }}
+              />
+              <p style={{ color: "white", margin: 0 }}>
                 {movie.title}
               </p>
             </div>
