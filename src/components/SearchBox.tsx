@@ -49,7 +49,7 @@ export default function SearchBox() {
       const data = await res.json();
       setResults(data.results || []);
     } catch (err) {
-      console.error("Search error:", err);
+      console.error(err);
     }
   };
 
@@ -81,15 +81,19 @@ export default function SearchBox() {
           }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => {
-            // delay so click works
-            setTimeout(() => setIsFocused(false), 200);
+            setTimeout(() => {
+              if (!document.activeElement?.closest("#search-results")) {
+                setIsFocused(false);
+              }
+            }, 200);
           }}
         />
       </Search>
 
-      {/* 🎬 RESULTS DROPDOWN */}
+      {/* 🎬 SEARCH RESULTS */}
       {results.length > 0 && isFocused && (
         <div
+          id="search-results"
           style={{
             position: "absolute",
             top: "40px",
