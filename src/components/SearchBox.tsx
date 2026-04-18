@@ -5,7 +5,6 @@ import SearchIcon from "@mui/icons-material/Search";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
-  width: "100%",
   display: "flex",
   alignItems: "center",
 }));
@@ -35,18 +34,22 @@ export default function SearchBox() {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const searchMovies = async (text: string) => {
-    if (!text) return;
+    if (!text) {
+      setResults([]);
+      return;
+    }
 
     const res = await fetch(
       `https://api.themoviedb.org/3/search/movie?api_key=${import.meta.env.VITE_APP_TMDB_V3_API_KEY}&query=${text}`
     );
 
     const data = await res.json();
-    setResults(data.results);
+    setResults(data.results || []);
   };
 
   return (
-    <div>
+    <div style={{ position: "relative" }}>
+      {/* SEARCH BAR */}
       <Search
         style={
           isFocused
@@ -76,24 +79,43 @@ export default function SearchBox() {
         />
       </Search>
 
-      {/* RESULTS */}
+      {/* DROPDOWN RESULTS */}
       {results.length > 0 && (
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            marginTop: "20px",
+            position: "absolute",
+            top: "45px",
+            right: 0,
+            width: "350px",
+            maxHeight: "400px",
+            overflowY: "auto",
             backgroundColor: "black",
+            border: "1px solid #333",
+            zIndex: 9999,
             padding: "10px",
           }}
         >
           {results.map((movie) => (
-            <div key={movie.id} style={{ margin: "10px" }}>
-              <img
-                src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
-                alt={movie.title}
-              />
-              <p style={{ color: "white" }}>{movie.title}</p>
+            <div
+              key={movie.id}
+              style={{
+                display: "flex",
+                gap: "10px",
+                marginBottom: "10px",
+                cursor: "pointer",
+                alignItems: "center",
+              }}
+            >
+              {movie.poster_path && (
+                <img
+                  src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
+                  alt={movie.title}
+                  style={{ width: "50px", borderRadius: "4px" }}
+                />
+              )}
+              <p style={{ color: "white", fontSize: "14px" }}>
+                {movie.title}
+              </p>
             </div>
           ))}
         </div>
