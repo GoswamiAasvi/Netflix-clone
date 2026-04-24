@@ -30,7 +30,7 @@ pipeline {
             steps {
                 sh 'docker build -t netflix --build-arg TMDB_V3_API_KEY=16161e8b7725597daa1211538c1860eb .'
                 sh 'docker rm -f netflix || true'
-                sh 'docker run -d -p 8081:80 netflix'
+                sh 'docker run -d -p 8081:80 netflix netflix'
             }
         }
     }
