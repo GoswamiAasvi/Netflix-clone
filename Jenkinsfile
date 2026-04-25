@@ -42,7 +42,7 @@ pipeline {
             steps {
                 sh '''
                 docker rm -f netflix || true
-                docker run -d -p 8081:80 --name netflix netflix
+                docker run -d -p 8081:80 --name netflix netflix_clone
                 '''
             }
         }
